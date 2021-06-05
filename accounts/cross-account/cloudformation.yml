@@ -1,0 +1,136 @@
+Description: This stack grants access to the account it has been deployed into.  All account access must leverage a multi-factor authenticated login of the Advosight employee.
+
+Parameters:
+  ServerlessDevAccess:
+    Type: String
+    Description: Grants engineering and developer access to the account
+    AllowedValues:
+      - "Yes"
+      - "No"
+    Default: "Yes"
+  AccountAdministratorAccess:
+    Type: String
+    Description: Grants full administration access to the account
+    AllowedValues:
+      - "Yes"
+      - "No"
+    Default: "No"
+  ReadOnlyAccess:
+    Type: String
+    Description: Grants read-only access to the account
+    AllowedValues:
+      - "Yes"
+      - "No"
+    Default: "Yes"
+
+Conditions:
+  ReadOnlyAccessOn:
+    Fn::Equals:
+      - !Ref ReadOnlyAccess
+      - "Yes"
+  ServerlessDevAccessOn:
+    Fn::Equals:
+      - !Ref ServerlessDevAccess
+      - "Yes"
+  AccountAdminAccessOn:
+    Fn::Equals:
+      - !Ref AccountAdministratorAccess
+      - "Yes"
+Resources:
+  ReadOnlyRole:
+    Type: AWS::IAM::Role
+    Condition: ReadOnlyAccessOn
+    Properties:
+      RoleName: advosight-read-only
+      Path: "/"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Condition:
+              Bool:
+                "aws:MultiFactorAuthPresent": true
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/ReadOnlyAccess
+
+  ServerlessDeveloperRole:
+    Type: AWS::IAM::Role
+    Condition: ServerlessDevAccessOn
+    Properties:
+      RoleName: serverless-engineer
+      Path: "/"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Condition:
+              Bool:
+                "aws:MultiFactorAuthPresent": true
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+      Policies:
+        - PolicyName: ServerlessDeveloperAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: "*"
+                Resource: "*"
+              - Effect: Deny
+                Action:
+                  - iam:UserToGroup
+                  - iam:AttachGroupPolicy
+                  - iam:CreateLoginProfile
+                  - iam:CreateUser
+                  - iam:CreateVirtualMFADevice
+                  - iam:DeactivateMFADevice
+                  - iam:DeleteAccountAlias
+                  - iam:DeleteAccountPasswordPolicy
+                  - iam:DeleteLoginProfile
+                  - iam:DeleteUser
+                  - iam:DeleteUserPermissionsBoundary
+                  - iam:DeleteUserPolicy
+                  - iam:DeleteVirtualMFADevice
+                  - iam:DetachGroupPolicy
+                  - iam:DetachUserPolicy
+                  - iam:EnableMFADevice
+                  - iam:PutUserPolicy
+                  - iam:RemoveUserFromGroup
+                  - iam:UpdateGroup
+                  - iam:UpdateLoginProfile
+                  - iam:UpdateUser
+                  - sts:AssumeRole
+                Resource: "*"
+              - Effect: Deny
+                Action: "*"
+                Resource: 
+                  - !Sub arn:aws:iam::${AWS::AccountId}:role/serverless-*
+
+  AccountAdminRole:
+    Type: AWS::IAM::Role
+    Condition: AccountAdminAccessOn
+    Properties:
+      RoleName: serverless-account-admin
+      Path: "/"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Condition:
+              Bool:
+                "aws:MultiFactorAuthPresent": true
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+      Policies:
+        - PolicyName: ServerlessAccountAdmin
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: "*"
+                Resource: "*"
