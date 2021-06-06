@@ -107,8 +107,10 @@ Resources:
                 Resource: "*"
               - Effect: Deny
                 Action: "*"
-                Resource: 
-                  - !Sub arn:aws:iam::${AWS::AccountId}:role/serverless-*
+                Resource:
+                  - !Sub arn:aws:iam::${AWS::AccountId}:role/serverless-read-only
+                  - !Sub arn:aws:iam::${AWS::AccountId}:role/serverless-engineer
+                  - !Sub arn:aws:iam::${AWS::AccountId}:role/serverless-account-admin
 
   AccountAdminRole:
     Type: AWS::IAM::Role
