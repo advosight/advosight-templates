@@ -3,6 +3,11 @@ $account = "<REPLACE ME>" # The account number of the account you're logging int
 $emailAddress = "<REPLACE ME>" # Your email address you are using to log in with
 $role = "serverless-engineer"
 
+$ENV:AWS_ACCESS_KEY_ID = ''
+$ENV:AWS_SECRET_ACCESS_KEY = ''
+$ENV:AWS_SESSION_TOKEN = ''
+
+
 # Get token code 
 $token_code = Read-Host -Prompt 'Enter MFA token'
 

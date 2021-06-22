@@ -3,6 +3,11 @@ account='<REPLACE ME>' # The account number of the account you're logging into. 
 emailAddress='<REPLACE ME>' # Your email address you are using to log in with
 role='serverless-engineer'
 
+export AWS_ACCESS_KEY_ID=''
+export AWS_SECRET_ACCESS_KEY=''
+export AWS_SESSION_TOKEN=''
+
+
 roleJSON=$(aws sts assume-role --role-arn arn:aws:iam::${account}:role/$role --role-session-name $emailAddress --serial-number $mfaArn --token-code $1)
 
 AWS_ACCESS_KEY_ID=$(echo $roleJSON | jq -r '.Credentials.AccessKeyId')
